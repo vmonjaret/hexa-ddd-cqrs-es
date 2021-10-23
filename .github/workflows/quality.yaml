@@ -1,0 +1,26 @@
+name: Quality analysis
+
+on:
+  pull_request:
+
+jobs:
+  static-analyse:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        id: cache
+        with:
+          path: vendor
+          key: ${{ runner.os }}-deps-${{ hashFiles('**/composer.lock') }}
+      - name: Install dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: docker://composer
+        with:
+          entrypoint: composer
+          args: install
+      - name: PHPStan
+        uses: docker://ghcr.io/phpstan/phpstan:0.12.99
+        with:
+          entrypoint: phpstan
+          args: analyse --error-format=github --no-progress
