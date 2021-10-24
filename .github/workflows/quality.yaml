@@ -1,0 +1,56 @@
+name: Quality analysis
+
+on:
+  pull_request:
+
+jobs:
+  install_dependencies:
+    name: Install dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        id: cache
+        with:
+          path: vendor
+          key: ${{ runner.os }}-deps-${{ hashFiles('**/composer.lock') }}
+      - name: Install dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: docker://composer
+        with:
+          entrypoint: composer
+          args: install
+
+  static-analyse:
+    name: Static analyse
+    runs-on: ubuntu-latest
+    needs: install_dependencies
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        id: cache
+        with:
+          path: vendor
+          key: ${{ runner.os }}-deps-${{ hashFiles('**/composer.lock') }}
+      - name: PHPStan
+        uses: docker://ghcr.io/phpstan/phpstan:0.12.99
+        with:
+          entrypoint: phpstan
+          args: analyse --error-format=github --no-progress
+
+  linter:
+    name: Linter
+    runs-on: ubuntu-latest
+    needs: install_dependencies
+    steps:
+      - uses: actions/checkout@v2
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.0
+      - uses: actions/cache@v2
+        id: cache
+        with:
+          path: vendor
+          key: ${{ runner.os }}-deps-${{ hashFiles('**/composer.lock') }}
+      - name: ECS
+        run: ./vendor/bin/ecs check
