@@ -27,12 +27,12 @@
     },
     "autoload": {
         "psr-4": {
-            "App\\": "src/"
+            "Shared\\": "src/Shared"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "App\\Tests\\": "tests/"
+            "Shared\\Tests\\": "tests/Shared"
         }
     },
     "replace": {
