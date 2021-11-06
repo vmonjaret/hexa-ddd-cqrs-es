@@ -9,3 +9,11 @@ services:
         resource: '../src/Shared'
         exclude:
             - '../src/Shared/Infrastructure/Symfony/Kernel.php'
+
+    _instanceof:
+        Shared\Application\Command\CommandHandlerInterface:
+            tags:
+                - { name: messenger.message_handler, bus: command.bus }
+        Shared\Application\Query\QueryHandlerInterface:
+            tags:
+                - { name: messenger.message_handler, bus: command.bus }
